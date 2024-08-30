@@ -111,8 +111,10 @@ macro class Equatable implements ClassDeclarationsMacro, ClassDefinitionMacro {
     }
 
     if (hashCodeDeclaration != null) {
-      final mapPropsToHashCodeIdentifier = await builder.resolveIdentifier(_core, 'mapPropsToHashCode');
-      final getterBuilder = await builder.buildMethod(hashCodeDeclaration.identifier);
+      final mapPropsToHashCodeIdentifier =
+        await builder.resolveIdentifier(_core, 'mapPropsToHashCode');
+      final getterBuilder =
+        await builder.buildMethod(hashCodeDeclaration.identifier);
       final parts = [
         '=> runtimeType.hashCode ^ ', mapPropsToHashCodeIdentifier ,'([\n',
         for (final field in fields)
@@ -124,12 +126,14 @@ macro class Equatable implements ClassDeclarationsMacro, ClassDefinitionMacro {
     }
 
     if (equalityOperatorDeclaration != null) {
-      final identicalIdentifier = await builder.resolveIdentifier(_dartCore, 'identical');
+      final identicalIdentifier =
+        await builder.resolveIdentifier(_dartCore, 'identical');
       final equalsIdentifier = await builder.resolveIdentifier(_core, 'equals');
-      final methodBuilder = await builder.buildMethod(equalityOperatorDeclaration.identifier);
+      final methodBuilder =
+        await builder.buildMethod(equalityOperatorDeclaration.identifier);
 
-      final thisFieldNames = [];
-      final otherFieldNames = [];
+      final thisFieldNames = <Object>[];
+      final otherFieldNames = <Object>[];
 
       for (final field in fields) {
         thisFieldNames.addAll([
@@ -141,16 +145,18 @@ macro class Equatable implements ClassDeclarationsMacro, ClassDefinitionMacro {
         ]);
       }
 
-      methodBuilder.augment(FunctionBodyCode.fromParts([
-        '=>\n',
-        '    ', identicalIdentifier ,'(this, other) ||\n'
-        '    ', 'other is ', clazz.identifier ,' &&\n',
-        '    ', equalsIdentifier, '([\n',
-          ...thisFieldNames ,
-        '    ', '], [\n',
-          ...otherFieldNames,
-        '    ', ']);'
-      ]));
+      methodBuilder.augment(
+        FunctionBodyCode.fromParts([
+          '=>\n',
+          '    ', identicalIdentifier ,'(this, other) ||\n',
+          '    ', 'other is ', clazz.identifier ,' &&\n',
+          '    ', equalsIdentifier, '([\n',
+            ...thisFieldNames ,
+          '    ', '], [\n',
+            ...otherFieldNames,
+          '    ', ']);',
+        ]),
+      );
     }
     else {
       builder.error("Can't find == operator");

@@ -10,14 +10,12 @@ final class _InitializeIt {
 
   List<Code> createInitializers() {
     final code = <Code>[];
-    final declaredNamesCountable = {};
+    final declaredNamesCountable = <String, int>{};
 
     for (final field in fields) {
-      String argumentName = field.identifier.name.trimUnderscoreLeft();
+      var argumentName = field.identifier.name.trimUnderscoreLeft();
 
-      declaredNamesCountable[argumentName] ??= 0;
-
-      final argumentNameCount = declaredNamesCountable[argumentName];
+      final argumentNameCount = declaredNamesCountable[argumentName] ??= 0;
 
       if (argumentNameCount > 0) {
         declaredNamesCountable[argumentName] = argumentNameCount + 1;
@@ -29,9 +27,11 @@ final class _InitializeIt {
 
       declaredNamesCountable[argumentName] = argumentNameCount + 1;
 
-      code.add(RawCode.fromParts([
-        field.identifier, ' = ', argumentName,
-      ]));
+      code.add(
+        RawCode.fromParts([
+          field.identifier, ' = ', argumentName,
+        ]),
+      );
     }
 
     return code;
@@ -42,11 +42,9 @@ final class _InitializeIt {
     final declaredNamesCountable = <String, int>{};
 
     for (final field in fields) {
-      String argumentName = field.identifier.name.trimUnderscoreLeft();
+      var argumentName = field.identifier.name.trimUnderscoreLeft();
 
-      declaredNamesCountable[argumentName] ??= 0;
-
-      final argumentNameCount = declaredNamesCountable[argumentName]!;
+      final argumentNameCount = declaredNamesCountable[argumentName] ??= 0;
 
       if (argumentNameCount > 0) {
         declaredNamesCountable[argumentName] = argumentNameCount + 1;
@@ -56,17 +54,20 @@ final class _InitializeIt {
         declaredNamesCountable[argumentName] = argumentNameCount + 1;
       }
 
-      code.add(createArgumentDeclaration(
-        field.type.code,
-        argumentName,
-        isRequired: !field.type.isNullable && !field.hasInitializer,
-      ));
+      code.add(
+        createArgumentDeclaration(
+          field.type.code,
+          argumentName,
+          isRequired: !field.type.isNullable && !field.hasInitializer,
+        ),
+      );
     }
 
     return DeclarationCode.fromParts(code);
   }
 
-  RawCode createArgumentDeclaration(TypeAnnotationCode type, String argumentName, {
+  RawCode createArgumentDeclaration(
+    TypeAnnotationCode type, String argumentName, {
     required bool isRequired,
   }) {
     return RawCode.fromParts([
@@ -75,7 +76,7 @@ final class _InitializeIt {
       type,
       ' ',
       argumentName,
-      ',\n'
+      ',\n',
     ]);
   }
 }
@@ -83,6 +84,7 @@ final class _InitializeIt {
 /// Creates constructor with the [name] or unnamed with initializers for all
 /// fields.
 macro class AutoCtor implements ClassDeclarationsMacro, ClassDefinitionMacro {
+  /// Default ctor
   const AutoCtor({
     this.name,
     this.constant = true,
@@ -105,35 +107,43 @@ macro class AutoCtor implements ClassDeclarationsMacro, ClassDefinitionMacro {
   }
 
   @override
-  FutureOr<void> buildDeclarationsForClass(ClassDeclaration clazz, MemberDeclarationBuilder builder) async {
-    final constructorDeclaration = await builder.constructorOf(clazz, name ?? '');
+  FutureOr<void> buildDeclarationsForClass(
+    ClassDeclaration clazz,
+    MemberDeclarationBuilder builder,
+  ) async {
+    final constructorDeclaration =
+      await builder.constructorOf(clazz, name ?? '');
 
     if (constructorDeclaration != null) {
       builder.error(
         "AutoCtor can't generate constructor due to this one",
-          constructorDeclaration.asDiagnosticTarget);
+        constructorDeclaration.asDiagnosticTarget,
+      );
       return;
     }
 
     final fields = await builder.fieldsOf(clazz);
     final membersToInitialize = _membersToInitialize(fields: fields);
 
-    final shouldBeConst = constant && !(
-      fields.any((field) => field.hasLate)
-    );
+    final shouldBeConst = constant && !fields.any((field) => field.hasLate);
     final ctorName = name != null && name!.isNotEmpty ? '.$name' : '';
     final className = clazz.identifier.name;
     final constructor = "${shouldBeConst ? 'const' : ''} $className$ctorName";
 
-    builder.declareInType(DeclarationCode.fromParts([
+    builder.declareInType(
+      DeclarationCode.fromParts([
       '  external $constructor({\n',
       membersToInitialize.createArgumentsDeclaration(),
       '  });',
-    ]));
+      ]),
+    );
   }
 
   @override
-  FutureOr<void> buildDefinitionForClass(ClassDeclaration clazz, TypeDefinitionBuilder builder) async {
+  FutureOr<void> buildDefinitionForClass(
+    ClassDeclaration clazz,
+    TypeDefinitionBuilder builder,
+  ) async {
     final ctor = await builder.constructorOf(clazz, name ?? '');
 
     if (ctor == null) {
@@ -152,7 +162,7 @@ macro class AutoCtor implements ClassDeclarationsMacro, ClassDefinitionMacro {
 
 extension on String {
   String trimUnderscoreLeft() {
-    int index = 0;
+    var index = 0;
 
     while (this[index] == '_') {
       if (index > 100) {

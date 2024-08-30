@@ -9,7 +9,9 @@ dependencies:
   macros: ^0.1.2-main.4
   collection: ^1.19.0
   xmacros: ^1.0.0
+  meta: ^1.15.0
 
 dev_dependencies:
   lints: ^4.0.0
   test: ^1.24.0
+  very_good_analysis: ^6.0.0

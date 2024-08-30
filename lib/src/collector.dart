@@ -4,10 +4,12 @@ import 'dart:collection';
 
 import 'package:macros/macros.dart';
 import 'package:xmacros/xmacros.dart';
-import 'package:supermacros/supermacros.dart';
 
+/// Kind of type whether to search for a [CollectTypesMethods.methodName]
 enum TypeKind {
+  /// Search in classes
   clazz,
+  /// Search in extensions
   extension,
 }
 
