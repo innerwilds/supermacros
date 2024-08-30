@@ -12,7 +12,7 @@ enum TypeKind {
 }
 
 /// Collect an [methodName] method from all types in [Library] that conform
-/// the [constraints]
+/// the constraints: [superclass], [implementsRaw], [kind].
 macro class CollectTypesMethods implements VariableDefinitionMacro {
   const CollectTypesMethods({
     required this.methodName,

@@ -1,6 +1,6 @@
 name: supermacros
-description: A starting point for Dart libraries or applications
-version: 1.0.0
+description: Set of super macros to help you write less code!
+version: 0.0.1-alpha
 
 environment:
   sdk: ^3.6.0-146.0.dev
