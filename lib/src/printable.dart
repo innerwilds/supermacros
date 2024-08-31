@@ -3,7 +3,8 @@ import 'dart:async';
 import 'package:macros/macros.dart';
 import 'package:xmacros/xmacros.dart';
 
-/// A macro that overrides [toString] to print name of target class and its fields:
+/// A macro that overrides [toString] to print name of target class
+/// and its fields:
 /// ExampleClassName(
 ///   fieldA: 1,
 ///   fieldB: "2",
@@ -11,12 +12,13 @@ import 'package:xmacros/xmacros.dart';
 ///   fieldD: [Instance of "E"]
 /// );
 macro class Printable implements ClassDefinitionMacro, ClassDeclarationsMacro {
+  /// Default ctor
   const Printable({
     this.getters = true,
     this.indent = 2,
     this.inline = false,
     this.private = false,
-    this.methods = "",
+    this.methods = '',
   });
 
   /// Whether to include getters.
@@ -38,7 +40,10 @@ macro class Printable implements ClassDefinitionMacro, ClassDeclarationsMacro {
   String get _indentSpaces => ' ' * (indent < 0 ? 0 : indent);
 
   @override
-  FutureOr<void> buildDefinitionForClass(ClassDeclaration clazz, TypeDefinitionBuilder builder) async {
+  FutureOr<void> buildDefinitionForClass(
+    ClassDeclaration clazz,
+    TypeDefinitionBuilder builder,
+  ) async {
     final printableMethods = methods.trim().split(',').map((e) => e.trim());
     final membersToPrint = [
       for (final method in await builder.methodsOf(clazz))
@@ -58,35 +63,64 @@ macro class Printable implements ClassDefinitionMacro, ClassDeclarationsMacro {
 
     String constructMemberName(Declaration declaration) {
       return switch (declaration) {
-        MethodDeclaration() when !declaration.isGetter => '${declaration.identifier.name}()',
-        MethodDeclaration() when declaration.isGetter => declaration.identifier.name,
+        MethodDeclaration() when !declaration.isGetter =>
+          '${declaration.identifier.name}()',
+        MethodDeclaration() when declaration.isGetter =>
+          declaration.identifier.name,
         FieldDeclaration() => declaration.identifier.name,
-        _ => throw "Unsupported type declaration $declaration",
+        _ => throw UnimplementedError(
+          'Unimplemented type declaration $declaration',
+        ),
       };
     }
 
     String constructMemberCall(Declaration declaration) {
       return switch (declaration) {
-        MethodDeclaration() when !declaration.isGetter => '${declaration.identifier.name}()',
-        MethodDeclaration() when declaration.isGetter => declaration.identifier.name,
+        MethodDeclaration() when !declaration.isGetter =>
+          '${declaration.identifier.name}()',
+        MethodDeclaration() when declaration.isGetter =>
+          declaration.identifier.name,
         FieldDeclaration() => declaration.identifier.name,
-        _ => throw "Unsupported type declaration $declaration",
+        _ => throw UnimplementedError(
+          'Unimplemented type declaration $declaration',
+        ),
       };
     }
 
-    methodBuilder.augment(FunctionBodyCode.fromParts([
-      '=> "${clazz.identifier.name}($_terminator"\n',
-      for (final member in membersToPrint)
-        '    "$_indentSpaces${constructMemberName(member)}: \${${constructMemberCall(member)}},$_terminator"\n',
-      '  ")";'
-    ]));
+    String createKey(MemberDeclaration member) {
+      return '$_indentSpaces${constructMemberName(member)}';
+    }
+
+    String createValue(MemberDeclaration member) {
+      return '\${${constructMemberCall(member)}}';
+    }
+
+    String createPairs(List<MemberDeclaration> members) {
+      return [
+        for (final member in membersToPrint)
+          '    "${createKey(member)}: ${createValue(member)}',
+      ].join(',$_terminator"\n');
+    }
+
+    methodBuilder.augment(
+      FunctionBodyCode.fromParts([
+        '=> "${clazz.identifier.name}($_terminator"\n',
+        createPairs(membersToPrint),
+        '  ")";',
+      ]),
+    );
   }
 
   @override
-  FutureOr<void> buildDeclarationsForClass(ClassDeclaration clazz, MemberDeclarationBuilder builder) {
-    builder.declareInType(DeclarationCode.fromParts([
-      '  @override\n',
-      '  external String toString();'
-    ]));
+  FutureOr<void> buildDeclarationsForClass(
+    ClassDeclaration clazz,
+    MemberDeclarationBuilder builder,
+  ) {
+    builder.declareInType(
+      DeclarationCode.fromParts([
+        '  @override\n',
+        '  external String toString();',
+      ]),
+    );
   }
 }

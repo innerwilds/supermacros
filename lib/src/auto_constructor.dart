@@ -3,84 +3,6 @@ import 'dart:async';
 import 'package:macros/macros.dart';
 import 'package:xmacros/xmacros.dart';
 
-final class _InitializeIt {
-  _InitializeIt(this.fields);
-
-  final List<FieldDeclaration> fields;
-
-  List<Code> createInitializers() {
-    final code = <Code>[];
-    final declaredNamesCountable = <String, int>{};
-
-    for (final field in fields) {
-      var argumentName = field.identifier.name.trimUnderscoreLeft();
-
-      final argumentNameCount = declaredNamesCountable[argumentName] ??= 0;
-
-      if (argumentNameCount > 0) {
-        declaredNamesCountable[argumentName] = argumentNameCount + 1;
-        argumentName += '$argumentNameCount';
-      }
-      else {
-        declaredNamesCountable[argumentName] = argumentNameCount + 1;
-      }
-
-      declaredNamesCountable[argumentName] = argumentNameCount + 1;
-
-      code.add(
-        RawCode.fromParts([
-          field.identifier, ' = ', argumentName,
-        ]),
-      );
-    }
-
-    return code;
-  }
-
-  DeclarationCode createArgumentsDeclaration() {
-    final code = <Object>[];
-    final declaredNamesCountable = <String, int>{};
-
-    for (final field in fields) {
-      var argumentName = field.identifier.name.trimUnderscoreLeft();
-
-      final argumentNameCount = declaredNamesCountable[argumentName] ??= 0;
-
-      if (argumentNameCount > 0) {
-        declaredNamesCountable[argumentName] = argumentNameCount + 1;
-        argumentName += '$argumentNameCount';
-      }
-      else {
-        declaredNamesCountable[argumentName] = argumentNameCount + 1;
-      }
-
-      code.add(
-        createArgumentDeclaration(
-          field.type.code,
-          argumentName,
-          isRequired: !field.type.isNullable && !field.hasInitializer,
-        ),
-      );
-    }
-
-    return DeclarationCode.fromParts(code);
-  }
-
-  RawCode createArgumentDeclaration(
-    TypeAnnotationCode type, String argumentName, {
-    required bool isRequired,
-  }) {
-    return RawCode.fromParts([
-      '    ',
-      if (isRequired) 'required ',
-      type,
-      ' ',
-      argumentName,
-      ',\n',
-    ]);
-  }
-}
-
 /// Creates constructor with the [name] or unnamed with initializers for all
 /// fields.
 macro class AutoCtor implements ClassDeclarationsMacro, ClassDefinitionMacro {
@@ -172,5 +94,83 @@ extension on String {
     }
 
     return index >= length ? '' : substring(index);
+  }
+}
+
+final class _InitializeIt {
+  _InitializeIt(this.fields);
+
+  final List<FieldDeclaration> fields;
+
+  List<Code> createInitializers() {
+    final code = <Code>[];
+    final declaredNamesCountable = <String, int>{};
+
+    for (final field in fields) {
+      var argumentName = field.identifier.name.trimUnderscoreLeft();
+
+      final argumentNameCount = declaredNamesCountable[argumentName] ??= 0;
+
+      if (argumentNameCount > 0) {
+        declaredNamesCountable[argumentName] = argumentNameCount + 1;
+        argumentName += '$argumentNameCount';
+      }
+      else {
+        declaredNamesCountable[argumentName] = argumentNameCount + 1;
+      }
+
+      declaredNamesCountable[argumentName] = argumentNameCount + 1;
+
+      code.add(
+        RawCode.fromParts([
+          field.identifier, ' = ', argumentName,
+        ]),
+      );
+    }
+
+    return code;
+  }
+
+  DeclarationCode createArgumentsDeclaration() {
+    final code = <Object>[];
+    final declaredNamesCountable = <String, int>{};
+
+    for (final field in fields) {
+      var argumentName = field.identifier.name.trimUnderscoreLeft();
+
+      final argumentNameCount = declaredNamesCountable[argumentName] ??= 0;
+
+      if (argumentNameCount > 0) {
+        declaredNamesCountable[argumentName] = argumentNameCount + 1;
+        argumentName += '$argumentNameCount';
+      }
+      else {
+        declaredNamesCountable[argumentName] = argumentNameCount + 1;
+      }
+
+      code.add(
+        createArgumentDeclaration(
+          field.type.code,
+          argumentName,
+          isRequired: !field.type.isNullable && !field.hasInitializer,
+        ),
+      );
+    }
+
+    return DeclarationCode.fromParts(code);
+  }
+
+  RawCode createArgumentDeclaration(
+      TypeAnnotationCode type, String argumentName, {
+        required bool isRequired,
+      }) {
+    return RawCode.fromParts([
+      '    ',
+      if (isRequired) 'required ',
+      type,
+      ' ',
+      argumentName,
+      ',\n',
+    ]);
   }
 }

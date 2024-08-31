@@ -1,14 +1,14 @@
 name: supermacros
 description: Set of super macros to help you write less code!
-version: 0.0.1-alpha
+version: 0.1.0-alpha
 
 environment:
-  sdk: ^3.6.0-146.0.dev
+  sdk: ^3.6.0-198.0.dev
 
 dependencies:
   macros: ^0.1.2-main.4
   collection: ^1.19.0
-  xmacros: ^1.0.0
+  xmacros: ^1.0.1
   meta: ^1.15.0
 
 dev_dependencies:

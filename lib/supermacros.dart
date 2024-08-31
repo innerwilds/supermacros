@@ -1,5 +1,5 @@
 /// Set of super macros to help you write less code!
-library;
+library supermacros;
 
 export 'src/auto_accessor.dart';
 export 'src/auto_constructor.dart';

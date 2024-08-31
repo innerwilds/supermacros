@@ -38,6 +38,7 @@ import 'package:xmacros/xmacros.dart';
 macro class JsonCodable
     with _Shared, _FromJson, _ToJson
     implements ClassDeclarationsMacro, ClassDefinitionMacro {
+  /// Default ctor
   const JsonCodable();
 
   /// Declares the `fromJson` constructor and `toJson` method, but does not

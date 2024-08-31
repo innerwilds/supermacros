@@ -4,6 +4,8 @@ import 'package:collection/collection.dart';
 import 'package:macros/macros.dart';
 import 'package:xmacros/xmacros.dart';
 
+// ignore_for_file: parameter_assignments
+
 /// Returns a `hashCode` for [props].
 int mapPropsToHashCode(Iterable<Object?> props) {
   return _finish(props.fold(0, _combine));
@@ -68,15 +70,26 @@ int _finish(int hash) {
 final _core = Uri.parse('package:data_class/src/equatable.dart');
 final _dartCore = Uri.parse('dart:core');
 
+/// Creates override of [hashCode] getter and [==] method based on all fields
+/// or only on public.
 macro class Equatable implements ClassDeclarationsMacro, ClassDefinitionMacro {
-  final bool all;
+  /// Default ctor
+  const Equatable({
+    this.includePrivate = true,
+  });
 
-  const Equatable() : all = false;
-  const Equatable.all() : all = true;
+  /// Whether to include private fields or not
+  final bool includePrivate;
 
   @override
-  FutureOr<void> buildDeclarationsForClass(ClassDeclaration clazz, MemberDeclarationBuilder builder) async {
-    final fields = await builder.allFieldsOf(clazz, includePrivate: all);
+  FutureOr<void> buildDeclarationsForClass(
+    ClassDeclaration clazz,
+    MemberDeclarationBuilder builder,
+  ) async {
+    final fields = await builder.allFieldsOf(
+      clazz,
+      includePrivate: includePrivate,
+    );
 
     if (fields.isEmpty) {
       return;
@@ -86,23 +99,33 @@ macro class Equatable implements ClassDeclarationsMacro, ClassDefinitionMacro {
     final equalityOperatorDeclaration = await builder.getterOf(clazz, '==');
 
     if (hashCodeDeclaration == null) {
-      builder.declareInType(DeclarationCode.fromParts([
-        '  @override\n',
-        '  external int get hashCode;\n\n',
-      ]));
+      builder.declareInType(
+        DeclarationCode.fromParts([
+          '  @override\n',
+          '  external int get hashCode;\n\n',
+        ]),
+      );
     }
 
     if (equalityOperatorDeclaration == null) {
-      builder.declareInType(DeclarationCode.fromParts([
-        '  @override\n',
-        '  external bool operator ==(Object other);\n'
-      ]));
+      builder.declareInType(
+        DeclarationCode.fromParts([
+          '  @override\n',
+          '  external bool operator ==(Object other);\n',
+        ]),
+      );
     }
   }
 
   @override
-  FutureOr<void> buildDefinitionForClass(ClassDeclaration clazz, TypeDefinitionBuilder builder) async {
-    final fields = await builder.allFieldsOf(clazz, includePrivate: all);
+  FutureOr<void> buildDefinitionForClass(
+    ClassDeclaration clazz,
+    TypeDefinitionBuilder builder,
+  ) async {
+    final fields = await builder.allFieldsOf(
+      clazz,
+      includePrivate: includePrivate,
+    );
     final hashCodeDeclaration = await builder.getterOf(clazz, 'hashCode');
     final equalityOperatorDeclaration = await builder.methodOf(clazz, '==');
 
@@ -119,7 +142,7 @@ macro class Equatable implements ClassDeclarationsMacro, ClassDefinitionMacro {
         '=> runtimeType.hashCode ^ ', mapPropsToHashCodeIdentifier ,'([\n',
         for (final field in fields)
           ...['    ', field.identifier.name, ',\n'],
-        '  ]);'
+        '  ]);',
       ];
 
       getterBuilder.augment(FunctionBodyCode.fromParts(parts));
@@ -137,11 +160,11 @@ macro class Equatable implements ClassDeclarationsMacro, ClassDefinitionMacro {
 
       for (final field in fields) {
         thisFieldNames.addAll([
-          '      ', field.identifier, ',\n'
+          '      ', field.identifier, ',\n',
         ]);
 
         otherFieldNames.addAll([
-          '      ', 'other.', field.identifier.name, ',\n'
+          '      ', 'other.', field.identifier.name, ',\n',
         ]);
       }
 
