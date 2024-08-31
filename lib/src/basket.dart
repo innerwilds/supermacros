@@ -58,7 +58,7 @@ final class BasketValue {
 /// };
 /// ```
 // ignore: camel_case_types
-class SetBasket implements VariableDefinitionMacro {
+macro class SetBasket implements VariableDefinitionMacro {
   /// Default constructor
   const SetBasket(this.name);
 

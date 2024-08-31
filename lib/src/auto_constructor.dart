@@ -52,11 +52,20 @@ macro class AutoCtor implements ClassDeclarationsMacro, ClassDefinitionMacro {
     final className = clazz.identifier.name;
     final constructor = "${shouldBeConst ? 'const' : ''} $className$ctorName";
 
+    Code createNamedArgumentsDeclaration() {
+      return DeclarationCode.fromParts([
+        '{\n',
+        membersToInitialize.createArgumentsDeclaration(),
+        '  }',
+      ]);
+    }
+
     builder.declareInType(
       DeclarationCode.fromParts([
-      '  external $constructor({\n',
-      membersToInitialize.createArgumentsDeclaration(),
-      '  });',
+      '  external $constructor(',
+      if (membersToInitialize.isNotEmpty)
+        createNamedArgumentsDeclaration(),
+      ');',
       ]),
     );
   }
@@ -101,6 +110,8 @@ final class _InitializeIt {
   _InitializeIt(this.fields);
 
   final List<FieldDeclaration> fields;
+
+  bool get isNotEmpty => fields.isNotEmpty;
 
   List<Code> createInitializers() {
     final code = <Code>[];
